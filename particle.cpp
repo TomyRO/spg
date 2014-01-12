@@ -20,16 +20,15 @@ using namespace glm;
 #include "common/texture.hpp"
 #include "common/controls.hpp"
 
-// CPU representation of a particle
 struct Particle{
 	glm::vec3 pos, speed;
-	unsigned char r,g,b,a; // Color
+	unsigned char r,g,b,a;
 	float size, angle;
-	float life; // Remaining life of the particle. if <0 : dead and unused.
-	float cameradistance; // *Squared* distance to the camera. if dead : -1.0f
+	float life; // if <0 : dead and unused.
+	float cameradistance;
 
+    // sortarea se astfel incat particulele mai departate sa fie desenate primele
 	bool operator<(const Particle& that) const {
-		// Sort in reverse order : far particles drawn first.
 		return this->cameradistance > that.cameradistance;
 	}
 };
@@ -98,7 +97,7 @@ int main( void )
 		return -1;
 	}
 
-	glfwSetWindowTitle( "Tutorial 18 - Particules" );
+	glfwSetWindowTitle( "Generator particule" );
 
 	// Ensure we can capture the escape key being pressed below
 	glfwEnable( GLFW_STICKY_KEYS );
