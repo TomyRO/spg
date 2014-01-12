@@ -28,8 +28,8 @@ float verticalAngle = 0.0f;
 // Initial Field of View
 float initialFoV = 45.0f;
 
-float speed = 3.0f; // 3 units / second
-float mouseSpeed = 0.005f;
+float speed = 5.0f; // 3 units / second
+float turnSpeed = 0.1f;
 
 
 void computeMatricesFromInputs(){
@@ -40,18 +40,23 @@ void computeMatricesFromInputs(){
 	// Compute time difference between current and last frame
 	double currentTime = glfwGetTime();
 	float deltaTime = float(currentTime - lastTime);
-
-	// Get mouse position
-	int xpos, ypos;
-	glfwGetMousePos(&xpos, &ypos);
-
-	// Reset mouse position for next frame
-	glfwSetMousePos(1024/2, 768/2);
-
-	// Compute new orientation
-	horizontalAngle += mouseSpeed * float(1024/2 - xpos );
-	verticalAngle   += mouseSpeed * float( 768/2 - ypos );
-
+	
+	// turn right
+	if (glfwGetKey( GLFW_KEY_RIGHT ) == GLFW_PRESS){
+		horizontalAngle -= turnSpeed;
+	}
+	// turn left
+	if (glfwGetKey( GLFW_KEY_LEFT ) == GLFW_PRESS){
+		horizontalAngle += turnSpeed;
+	}
+	// look up
+	if (glfwGetKey( GLFW_KEY_PAGEUP ) == GLFW_PRESS){
+		verticalAngle += turnSpeed;
+	}
+	//look down
+	if (glfwGetKey( GLFW_KEY_PAGEDOWN ) == GLFW_PRESS){
+		verticalAngle -= turnSpeed;
+	}
 	// Direction : Spherical coordinates to Cartesian coordinates conversion
 	glm::vec3 direction(
 		cos(verticalAngle) * sin(horizontalAngle), 
@@ -76,14 +81,6 @@ void computeMatricesFromInputs(){
 	// Move backward
 	if (glfwGetKey( GLFW_KEY_DOWN ) == GLFW_PRESS){
 		position -= direction * deltaTime * speed;
-	}
-	// Strafe right
-	if (glfwGetKey( GLFW_KEY_RIGHT ) == GLFW_PRESS){
-		position += right * deltaTime * speed;
-	}
-	// Strafe left
-	if (glfwGetKey( GLFW_KEY_LEFT ) == GLFW_PRESS){
-		position -= right * deltaTime * speed;
 	}
 
 	float FoV = initialFoV - 5 * glfwGetMouseWheel();
