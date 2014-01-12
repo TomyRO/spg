@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
+#include <math.h>
 
 #include <vector>
 #include <algorithm>
@@ -13,10 +15,12 @@
 #include <glm/gtx/norm.hpp>
 using namespace glm;
 
-
 #include "common/shader.hpp"
 #include "common/texture.hpp"
 #include "common/controls.hpp"
+
+#define PLAIN_EMITOR 1
+#define POINT_EMITOR 0
 
 struct Particle{
 	glm::vec3 pos, speed;
@@ -62,6 +66,9 @@ void SortParticles(){
 
 int main( void )
 {
+	
+	srand(time(0));
+
 	// Initialise GLFW
 	if( !glfwInit() )
 	{
@@ -161,7 +168,8 @@ int main( void )
 	// Initialize with empty (NULL) buffer : it will be updated later, each frame.
 	glBufferData(GL_ARRAY_BUFFER, MaxParticles * 4 * sizeof(GLubyte), NULL, GL_STREAM_DRAW);
 
-
+	float x,z;
+	int emitorType = 0;
 
 	double lastTime = glfwGetTime();
 	do
@@ -197,10 +205,22 @@ int main( void )
 		for(int i=0; i<newparticles; i++){
 			int particleIndex = FindUnusedParticle();
 			ParticlesContainer[particleIndex].life = 5.0f; // This particle will live 5 seconds.
-			ParticlesContainer[particleIndex].pos = glm::vec3(0,0,-20.0f);
+			
+			switch (emitorType)
+			{
+				case PLAIN_EMITOR:
+					x = rand() % 64 - 32;
+					z = rand() % 40 - 20;
+					break;
+				case POINT_EMITOR:
+					x = z = 0;
+					break;
+			}
+			ParticlesContainer[particleIndex].pos = glm::vec3(x,10,-20.0f+z);
+			ParticlesContainer[particleIndex].pos = glm::vec3(0,10,-20.0f);
 
 			float spread = 1.5f;
-			glm::vec3 maindir = glm::vec3(0.0f, 10.0f, 0.0f);
+			glm::vec3 maindir = glm::vec3(0.0f, -10.0f, 0.0f);
 			// Very bad way to generate a random direction;
 			// See for instance http://stackoverflow.com/questions/5408276/python-uniform-spherical-distribution instead,
 			// combined with some user-controlled parameters (main direction, spread, etc)
