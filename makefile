@@ -13,11 +13,11 @@ $(PROJ): $(OBJS)
 	$(CC) $(LIBPATH) -o $@ $(OBJS) $(LDFLAGS)
 
 %.o: %.c
-	$(CC) $(INCPATH) $(CFLAGS) -c $*.c
+	$(CC) $(INCPATH) $(CFLAGS) -c $*.c -o $*.o
 
 %.o: %.cpp
-	$(CC) $(INCPATH) $(CFLAGS) -c $*.cpp
+	$(CC) $(INCPATH) $(CFLAGS) -c $*.cpp -o $*.o
 
 clean:
-	$(RM) *.o
+	find . -name \*.o -type f -delete 
 	$(RM) $(PROJ)
