@@ -70,9 +70,21 @@ void SortParticles(){
 	std::sort(&ParticlesContainer[0], &ParticlesContainer[MaxParticles]);
 }
 
-int main( void )
+int main(int argc, char** argv)
 {
-	
+	float x,z;
+	int emitorType = EMITOR_POINT;
+	int spreadType = SPREAD_CONE;
+	float fi, theta;
+    
+    int r_color = 255, g_color = 255, b_color = 255;
+    double minSize, maxSize;
+
+    FILE *inputFile;
+    inputFile = fopen(argv[1], "rw");
+    fscanf(inputFile, "%d", &emitorType);
+    fscanf(inputFile, "%d %d %d", &r_color, &g_color, &b_color);
+    fscanf(inputFile, "%lf %lf", &minSize, &maxSize);
 	srand(time(0));
 
 	// Initialise GLFW
@@ -174,11 +186,6 @@ int main( void )
 	// Initialize with empty (NULL) buffer : it will be updated later, each frame.
 	glBufferData(GL_ARRAY_BUFFER, MaxParticles * 4 * sizeof(GLubyte), NULL, GL_STREAM_DRAW);
 
-	float x,z;
-	int emitorType = EMITOR_POINT;
-	int spreadType = SPREAD_CONE;
-	float fi, theta;
-
 	double lastTime = glfwGetTime();
 	do
 	{
@@ -206,14 +213,14 @@ int main( void )
 		// Generate 10 new particule each millisecond,
 		// but limit this to 16 ms (60 fps), or if you have 1 long frame (1sec),
 		// newparticles will be huge and the next frame even longer.
-		int newparticles = (int)(delta*10000.0);
-		if (newparticles > (int)(0.016f*10000.0))
-			newparticles = (int)(0.016f*10000.0);
+		int newparticles = (int)(delta*20000.0);
+		if (newparticles > (int)(0.016f*20000.0))
+			newparticles = (int)(0.016f*20000.0);
 
 		for(int i=0; i<newparticles; i++){
 			int particleIndex = FindUnusedParticle();
 			ParticlesContainer[particleIndex].life = 5.0f; // This particle will live 5 seconds.
-			
+
 			switch (emitorType)
 			{
 				case EMITOR_PLAIN:
@@ -256,12 +263,12 @@ int main( void )
 			ParticlesContainer[particleIndex].speed = maindir + randomdir*spread;
 
 			// Very bad way to generate a random color
-			ParticlesContainer[particleIndex].r = rand() % 256;
-			ParticlesContainer[particleIndex].g = rand() % 256;
-			ParticlesContainer[particleIndex].b = rand() % 256;
-			ParticlesContainer[particleIndex].a = (rand() % 256) / 2;
+			ParticlesContainer[particleIndex].r = r_color;
+			ParticlesContainer[particleIndex].g = g_color;
+			ParticlesContainer[particleIndex].b = b_color;
+			ParticlesContainer[particleIndex].a = (rand() % 256) / 3;
 
-			ParticlesContainer[particleIndex].size = (rand()%1000)/2000.0f + 0.1f;
+			ParticlesContainer[particleIndex].size = rand() / RAND_MAX * (minSize - maxSize) + minSize;
 
 		}
 
@@ -427,4 +434,3 @@ int main( void )
 
 	return 0;
 }
-
