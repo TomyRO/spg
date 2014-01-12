@@ -19,8 +19,14 @@ using namespace glm;
 #include "common/texture.hpp"
 #include "common/controls.hpp"
 
-#define PLAIN_EMITOR 1
-#define POINT_EMITOR 0
+#define PI 3.14159265359
+// #define FORCE 9.81f
+
+#define EMITOR_POINT 0
+#define EMITOR_PLAIN 1
+
+#define SPREAD_CONE 0
+#define SPREAD_OMNI 1
 
 struct Particle{
 	glm::vec3 pos, speed;
@@ -169,7 +175,9 @@ int main( void )
 	glBufferData(GL_ARRAY_BUFFER, MaxParticles * 4 * sizeof(GLubyte), NULL, GL_STREAM_DRAW);
 
 	float x,z;
-	int emitorType = 0;
+	int emitorType = EMITOR_POINT;
+	int spreadType = SPREAD_CONE;
+	float fi, theta;
 
 	double lastTime = glfwGetTime();
 	do
@@ -208,31 +216,44 @@ int main( void )
 			
 			switch (emitorType)
 			{
-				case PLAIN_EMITOR:
+				case EMITOR_PLAIN:
 					x = rand() % 64 - 32;
 					z = rand() % 40 - 20;
 					break;
-				case POINT_EMITOR:
+				case EMITOR_POINT:
 					x = z = 0;
 					break;
 			}
 			ParticlesContainer[particleIndex].pos = glm::vec3(x,10,-20.0f+z);
-			ParticlesContainer[particleIndex].pos = glm::vec3(0,10,-20.0f);
 
-			float spread = 1.5f;
-			glm::vec3 maindir = glm::vec3(0.0f, -10.0f, 0.0f);
-			glm::vec3 randomdir = glm::vec3(
-				(rand()%2000 - 1000.0f)/1000.0f,
-				(rand()%2000 - 1000.0f)/1000.0f,
-				(rand()%2000 - 1000.0f)/1000.0f
-			);
-
-			ParticlesContainer[particleIndex].speed = maindir + randomdir*spread;
-
+			float spread;
+			glm::vec3 maindir;
+			glm::vec3 randomdir;
 			switch (spreadType)
 			{
-				
+				case SPREAD_CONE:
+					spread = 1.5f;
+					maindir = glm::vec3(0.0f, -10.0f, 0.0f);
+					randomdir = glm::vec3(
+						(rand()%2000 - 1000.0f)/1000.0f,
+						(rand()%2000 - 1000.0f)/1000.0f,
+						(rand()%2000 - 1000.0f)/1000.0f
+					);
+					break;
+				case SPREAD_OMNI:
+					spread = 10.0f;
+					maindir = glm::vec3(0.0f, 0.0f, 0.0f);
+					fi = ((float)rand() / RAND_MAX) * 2 * PI;
+					theta =  ((float)rand() / RAND_MAX) * 2 * PI;
+					randomdir = glm::vec3(
+						10.0f * sin(theta) * cos(fi),
+						10.0f * sin(theta) * sin(fi),
+						10.0f * cos(theta)
+					);
+					break;
 			}
+
+			ParticlesContainer[particleIndex].speed = maindir + randomdir*spread;
 
 			// Very bad way to generate a random color
 			ParticlesContainer[particleIndex].r = rand() % 256;
@@ -259,9 +280,12 @@ int main( void )
 				if (p.life > 0.0f){
 
 					// Simulate simple physics : gravity only, no collisions
-					p.speed += glm::vec3(0.0f,-9.81f, 0.0f) * (float)delta * 0.5f;
+					#ifdef FORCE 
+						p.speed += glm::vec3(0.0f,-FORCE, 0.0f) * (float)delta * 0.5f;
+					#endif	
 					p.pos += p.speed * (float)delta;
 					p.cameradistance = glm::length2( p.pos - CameraPosition );
+					p.size *= 1.1f;
 					//ParticlesContainer[i].pos += glm::vec3(0.0f,10.0f, 0.0f) * (float)delta;
 
 					// Fill the GPU buffer
