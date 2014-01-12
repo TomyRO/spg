@@ -76,16 +76,24 @@ int main(int argc, char** argv)
 	int emitorType = EMITOR_POINT;
 	int spreadType = SPREAD_CONE;
 	float fi, theta;
-    
+    glm::vec3 maindir;
+
     int r_color = 255, g_color = 255, b_color = 255;
     double minSize, maxSize;
+    int smoke = 0;
 
     FILE *inputFile;
     inputFile = fopen(argv[1], "rw");
-    fscanf(inputFile, "%d", &emitorType);
+    fscanf(inputFile, "%d %d", &emitorType, &spreadType);
     fscanf(inputFile, "%d %d %d", &r_color, &g_color, &b_color);
     fscanf(inputFile, "%lf %lf", &minSize, &maxSize);
+    fscanf(inputFile, "%d", &smoke);
 	srand(time(0));
+    if (smoke == 1) {
+	    maindir = glm::vec3(0.0f, 10.0f, 0.0f);
+    } else {
+        maindir = glm::vec3(0.0f, -10.0f, 0.0f);
+    }
 
 	// Initialise GLFW
 	if( !glfwInit() )
@@ -234,13 +242,11 @@ int main(int argc, char** argv)
 			ParticlesContainer[particleIndex].pos = glm::vec3(x,10,-20.0f+z);
 
 			float spread;
-			glm::vec3 maindir;
 			glm::vec3 randomdir;
 			switch (spreadType)
 			{
 				case SPREAD_CONE:
 					spread = 1.5f;
-					maindir = glm::vec3(0.0f, -10.0f, 0.0f);
 					randomdir = glm::vec3(
 						(rand()%2000 - 1000.0f)/1000.0f,
 						(rand()%2000 - 1000.0f)/1000.0f,
@@ -287,12 +293,14 @@ int main(int argc, char** argv)
 				if (p.life > 0.0f){
 
 					// Simulate simple physics : gravity only, no collisions
-					#ifdef FORCE 
+					#ifdef FORCE
 						p.speed += glm::vec3(0.0f,-FORCE, 0.0f) * (float)delta * 0.5f;
-					#endif	
+					#endif
 					p.pos += p.speed * (float)delta;
 					p.cameradistance = glm::length2( p.pos - CameraPosition );
-					p.size *= 1.1f;
+                    if (smoke) {
+    					p.size *= 1.03f;
+                    }
 					//ParticlesContainer[i].pos += glm::vec3(0.0f,10.0f, 0.0f) * (float)delta;
 
 					// Fill the GPU buffer
