@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
-#include <iostream>
-#include <fstream>
 
 #include <vector>
 #include <algorithm>
@@ -66,15 +64,19 @@ void SortParticles(){
 	std::sort(&ParticlesContainer[0], &ParticlesContainer[MaxParticles]);
 }
 
-int main( void )
+int main(int argc, char** argv)
 {
-
-	srand(time(0));
-
 	float x,z;
 	int emitorType = 1;
     int r_color = 255, g_color = 255, b_color = 255;
     double minSize, maxSize;
+
+    FILE *inputFile;
+    inputFile = fopen(argv[1], "rw");
+    fscanf(inputFile, "%d", &emitorType);
+    fscanf(inputFile, "%d %d %d", &r_color, &g_color, &b_color);
+    fscanf(inputFile, "%lf %lf", &minSize, &maxSize);
+	srand(time(0));
 
 	// Initialise GLFW
 	if( !glfwInit() )
@@ -82,12 +84,6 @@ int main( void )
 		fprintf( stderr, "Failed to initialize GLFW\n" );
 		return -1;
 	}
-
-    FILE *inputFile;
-    inputFile = fopen("snow", "rw");
-    fscanf(inputFile, "%d", &emitorType);
-    fscanf(inputFile, "%d %d %d", &r_color, &g_color, &b_color);
-    fscanf(inputFile, "%lf %lf", &minSize, &maxSize);
 
 	glfwOpenWindowHint(GLFW_FSAA_SAMPLES, 4);
 	glfwOpenWindowHint(GLFW_WINDOW_NO_RESIZE,GL_TRUE);
@@ -150,6 +146,8 @@ int main( void )
 		ParticlesContainer[i].cameradistance = -1.0f;
 	}
 
+
+
 	GLuint Texture = loadDDS("particle.DDS");
 
 	// The VBO containing the 4 vertices of the particles.
@@ -179,7 +177,6 @@ int main( void )
 	// Initialize with empty (NULL) buffer : it will be updated later, each frame.
 	glBufferData(GL_ARRAY_BUFFER, MaxParticles * 4 * sizeof(GLubyte), NULL, GL_STREAM_DRAW);
 
-
 	double lastTime = glfwGetTime();
 	do
 	{
@@ -207,9 +204,9 @@ int main( void )
 		// Generate 10 new particule each millisecond,
 		// but limit this to 16 ms (60 fps), or if you have 1 long frame (1sec),
 		// newparticles will be huge and the next frame even longer.
-		int newparticles = (int)(delta*10000.0);
-		if (newparticles > (int)(0.016f*10000.0))
-			newparticles = (int)(0.016f*10000.0);
+		int newparticles = (int)(delta*20000.0);
+		if (newparticles > (int)(0.016f*20000.0))
+			newparticles = (int)(0.016f*20000.0);
 
 		for(int i=0; i<newparticles; i++){
 			int particleIndex = FindUnusedParticle();
@@ -226,13 +223,9 @@ int main( void )
 					break;
 			}
 			ParticlesContainer[particleIndex].pos = glm::vec3(x,10,-20.0f+z);
-//			ParticlesContainer[particleIndex].pos = glm::vec3(0,10,-20.0f);
 
 			float spread = 1.5f;
 			glm::vec3 maindir = glm::vec3(0.0f, -10.0f, 0.0f);
-			// Very bad way to generate a random direction;
-			// See for instance http://stackoverflow.com/questions/5408276/python-uniform-spherical-distribution instead,
-			// combined with some user-controlled parameters (main direction, spread, etc)
 			glm::vec3 randomdir = glm::vec3(
 				(rand()%2000 - 1000.0f)/1000.0f,
 				(rand()%2000 - 1000.0f)/1000.0f,
@@ -240,7 +233,6 @@ int main( void )
 			);
 
 			ParticlesContainer[particleIndex].speed = maindir + randomdir*spread;
-
 
 			// Very bad way to generate a random color
 			ParticlesContainer[particleIndex].r = r_color;
@@ -411,4 +403,3 @@ int main( void )
 
 	return 0;
 }
-
