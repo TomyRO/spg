@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
+#include <math.h>
 
 #include <vector>
 #include <algorithm>
@@ -63,6 +65,9 @@ void SortParticles(){
 
 int main( void )
 {
+	
+	srand(time(0));
+
 	// Initialise GLFW
 	if( !glfwInit() )
 	{
