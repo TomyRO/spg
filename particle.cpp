@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
+#include <iostream>
+#include <fstream>
 
 #include <vector>
 #include <algorithm>
@@ -66,8 +68,13 @@ void SortParticles(){
 
 int main( void )
 {
-	
+
 	srand(time(0));
+
+	float x,z;
+	int emitorType = 1;
+    int r_color = 255, g_color = 255, b_color = 255;
+    double minSize, maxSize;
 
 	// Initialise GLFW
 	if( !glfwInit() )
@@ -75,6 +82,12 @@ int main( void )
 		fprintf( stderr, "Failed to initialize GLFW\n" );
 		return -1;
 	}
+
+    FILE *inputFile;
+    inputFile = fopen("snow", "rw");
+    fscanf(inputFile, "%d", &emitorType);
+    fscanf(inputFile, "%d %d %d", &r_color, &g_color, &b_color);
+    fscanf(inputFile, "%lf %lf", &minSize, &maxSize);
 
 	glfwOpenWindowHint(GLFW_FSAA_SAMPLES, 4);
 	glfwOpenWindowHint(GLFW_WINDOW_NO_RESIZE,GL_TRUE);
@@ -137,8 +150,6 @@ int main( void )
 		ParticlesContainer[i].cameradistance = -1.0f;
 	}
 
-
-
 	GLuint Texture = loadDDS("particle.DDS");
 
 	// The VBO containing the 4 vertices of the particles.
@@ -168,8 +179,6 @@ int main( void )
 	// Initialize with empty (NULL) buffer : it will be updated later, each frame.
 	glBufferData(GL_ARRAY_BUFFER, MaxParticles * 4 * sizeof(GLubyte), NULL, GL_STREAM_DRAW);
 
-	float x,z;
-	int emitorType = 0;
 
 	double lastTime = glfwGetTime();
 	do
@@ -205,7 +214,7 @@ int main( void )
 		for(int i=0; i<newparticles; i++){
 			int particleIndex = FindUnusedParticle();
 			ParticlesContainer[particleIndex].life = 5.0f; // This particle will live 5 seconds.
-			
+
 			switch (emitorType)
 			{
 				case PLAIN_EMITOR:
@@ -217,7 +226,7 @@ int main( void )
 					break;
 			}
 			ParticlesContainer[particleIndex].pos = glm::vec3(x,10,-20.0f+z);
-			ParticlesContainer[particleIndex].pos = glm::vec3(0,10,-20.0f);
+//			ParticlesContainer[particleIndex].pos = glm::vec3(0,10,-20.0f);
 
 			float spread = 1.5f;
 			glm::vec3 maindir = glm::vec3(0.0f, -10.0f, 0.0f);
@@ -234,12 +243,12 @@ int main( void )
 
 
 			// Very bad way to generate a random color
-			ParticlesContainer[particleIndex].r = rand() % 256;
-			ParticlesContainer[particleIndex].g = rand() % 256;
-			ParticlesContainer[particleIndex].b = rand() % 256;
+			ParticlesContainer[particleIndex].r = r_color;
+			ParticlesContainer[particleIndex].g = g_color;
+			ParticlesContainer[particleIndex].b = b_color;
 			ParticlesContainer[particleIndex].a = (rand() % 256) / 3;
 
-			ParticlesContainer[particleIndex].size = (rand()%1000)/2000.0f + 0.1f;
+			ParticlesContainer[particleIndex].size = rand() / RAND_MAX * (minSize - maxSize) + minSize;
 
 		}
 
